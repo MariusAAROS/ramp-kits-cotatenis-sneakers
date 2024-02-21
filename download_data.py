@@ -8,17 +8,19 @@ import numpy as np
 _download_ = True
 folder = "data/sneakers_dataset/sneakers_dataset"
 
+
 def load_labels(path="data/cotatenis_sneakers_kaggle.csv"):
     df = pd.read_csv(path)
     labels = df[["sku", "brand"]]
     return labels
 
+
 def load_images_from_folder(folder, labels, size=999999):
     data = []
-    data_labels = []
+    # data_labels = []
     c = 0
     for filename in os.listdir(folder):
-        img = Image.open(os.path.join(folder,filename))
+        img = Image.open(os.path.join(folder, filename))
         np_img = np.array(img)
         img.close()
         try:
@@ -29,9 +31,10 @@ def load_images_from_folder(folder, labels, size=999999):
             c += 1
             if c >= size:
                 break
-        except:
-            print(filename)
+        except Exception as e:
+            print(f"An error occurred for file {filename} : {e}")
     return data
+
 
 def make_dataset(folder, build=True, size=2000):
     if build:
@@ -41,6 +44,7 @@ def make_dataset(folder, build=True, size=2000):
     else:
         images = pd.read_pickle("data/sneakers_dataset.pkl")
     return images
+
 
 api = KaggleApi()
 api.authenticate()
@@ -55,9 +59,11 @@ print("Transforming dataset...")
 cotatenis_data = make_dataset(folder, build=_download_, size=999999)
 images = [img for img, _ in cotatenis_data]
 labels = [brand for _, brand in cotatenis_data]
-X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.3, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    images, labels, test_size=0.3, random_state=42
+)
 
-#save X_train, X_test as images
+# save X_train, X_test as images
 os.makedirs("data/train", exist_ok=True)
 os.makedirs("data/test", exist_ok=True)
 for i, (img, label) in enumerate(zip(X_train, y_train)):
@@ -73,7 +79,12 @@ print("Cleaning up...")
 try:
     os.remove(destination_dir + "/sneakers_dataset")
     os.remove(destination_dir + "/cotatenis_sneakers_kaggle.csv")
-except:
-    print("Unsufficient permissions to remove files. Please remove [sneakers_dataset] and [cotatenis_sneakers_kaggle.csv] manually.")
+except Exception as e:
+    print(
+        "Unsufficient permissions to remove files.",
+        "Please remove [sneakers_dataset] and [cotatenis_sneakers_kaggle.csv]",
+        " manually.",
+        f"\nError: {e}",
+    )
 
 print("Dataset downloaded successfully.")
