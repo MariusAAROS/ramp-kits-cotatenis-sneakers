@@ -31,8 +31,10 @@ def load_images_from_folder(folder, labels, size=999999):
             c += 1
             if c >= size:
                 break
-        except Exception as e:
-            print(f"An error occurred for file {filename} : {e}")
+        except Exception:
+            raise RuntimeError(
+                f"Brand not found for file {filename}. This is normal and expected."
+            )
     return data
 
 
@@ -79,12 +81,11 @@ print("Cleaning up...")
 try:
     os.remove(destination_dir + "/sneakers_dataset")
     os.remove(destination_dir + "/cotatenis_sneakers_kaggle.csv")
-except Exception as e:
-    print(
+except Exception:
+    raise PermissionError(
         "Unsufficient permissions to remove files.",
         "Please remove [sneakers_dataset] and [cotatenis_sneakers_kaggle.csv]",
         " manually.",
-        f"\nError: {e}",
     )
 
 print("Dataset downloaded successfully.")
