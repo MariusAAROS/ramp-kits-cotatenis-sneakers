@@ -7,22 +7,19 @@ import rampwf as rw
 
 problem_title = "Sneakers brand classification"
 
-_prediction_label_names = ['adidas','Nike','Jordan']
+_prediction_label_names = ["adidas", "Nike", "Jordan"]
 
-Predictions = rw.prediction_types.make_multiclass(
-    label_names=_prediction_label_names)
+Predictions = rw.prediction_types.make_multiclass(label_names=_prediction_label_names)
 
 workflow = rw.workflows.Classifier()
 
 score_types = [
-    rw.score_types.BalancedAccuracy(
-        name="bal_acc", precision=3, adjusted=False
-    ),
+    rw.score_types.BalancedAccuracy(name="bal_acc", precision=3, adjusted=False),
     rw.score_types.Accuracy(name="acc", precision=3),
-
 ]
 
-def _read_data(path,split='train'):
+
+def _read_data(path, split="train"):
     """
     Idée : avoir un dossier test et un dossier train avec dedans labels.csv qui
     contient une colonne filename et une colonne label,
@@ -40,19 +37,20 @@ def _read_data(path,split='train'):
     X = np.array(filepaths, dtype=object)
     y = np.array(brands, dtype=object)
     assert len(X) == len(y)
-    
+
     return X, y
 
 
+def get_train_data(path="."):
+    return _read_data(path, split="train")
 
-def get_train_data(path='.'):
-    return _read_data(path, split='train')
 
+def get_test_data(path="."):
+    return _read_data(path, split="test")
 
-def get_test_data(path='.'):
-    return _read_data(path, split='test')
 
 groups = None
+
 
 def get_cv(X, y):
     cv = StratifiedGroupKFold(n_splits=2, shuffle=True, random_state=33)
