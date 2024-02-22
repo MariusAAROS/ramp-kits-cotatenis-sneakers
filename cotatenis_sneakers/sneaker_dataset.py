@@ -2,6 +2,7 @@ from torch.utils.data import Dataset
 from PIL import Image
 import os
 import pandas as pd
+from torchvision import transforms
 
 
 class SneakerDataset(Dataset):
@@ -25,9 +26,11 @@ class SneakerDataset(Dataset):
         return self.data.shape[0]
 
     def __getitem__(self, idx):
-        path = f"{idx}.jpg"
+        path = self.data.iloc[idx, 0]
         image = Image.open(os.path.join(self.folder, path))
-        label = self.data.iloc[idx, 0]
-        if self.transform:
-            image = self.transform(image)
+        label = self.data.iloc[idx, 1]
+        if not self.transform:
+            self.transform = transforms.ToTensor()  # minimum transformation
+
+        image = self.transform(image)
         return image, label
