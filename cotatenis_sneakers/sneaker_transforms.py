@@ -6,7 +6,7 @@ class PadToSize:
     Permet de rajouter du blanc sur les images pour les mettre à la taille souhaitée.
     """
 
-    def __init__(self, size, fill=255):
+    def __init__(self, size, fill=None):
         self.size = size
         self.fill = fill
 
@@ -20,8 +20,24 @@ class PadToSize:
         pad_top = pad_height // 2
         pad_bottom = pad_height - pad_top
 
+        if self.fill is None:
+            self.fill = self.calculate_mode_color(img)
+        else:
+            self.fill = self.fill
+
         padding = (pad_left, pad_top, pad_right, pad_bottom)
         return transforms.functional.pad(img, padding, fill=self.fill)
+
+    def calculate_mode_color(self, img):
+        # Calculate mode color
+        mode = img.convert("RGB").getcolors(maxcolors=img.size[0] * img.size[1])
+        if mode is None:
+            # If mode is None, return a default fill color (e.g., white)
+            # For now, this does not work :(
+            mode_color = (255, 255, 255)  # Default white color
+        else:
+            mode_color = max(mode, key=lambda x: x[0])[1]
+        return mode_color
 
 
 class UnNormalize(object):
