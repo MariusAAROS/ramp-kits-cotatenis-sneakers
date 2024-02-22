@@ -1,5 +1,6 @@
 cotatenis_venv
-data
+data/train
+data/test
 testing_env.ipynb
 sneakers_dataset
 cotatenis_sneakers_kaggle
