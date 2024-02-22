@@ -6,3 +6,6 @@ sneakers_dataset
 cotatenis_sneakers_kaggle
 __pycache__
 test.ipynb
+*.pkl
+*.jpg
+*.csv
