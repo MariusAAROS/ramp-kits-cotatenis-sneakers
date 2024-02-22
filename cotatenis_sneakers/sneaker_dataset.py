@@ -20,16 +20,24 @@ class SneakerDataset(Dataset):
         self.data = data
         self.folder = folder
         self.transform = transform
+        self.labels = self.data.iloc[:, 1]
+        self.unique_labels = self.labels.unique()
 
     def __len__(self):
         return self.data.shape[0]
 
     def __getitem__(self, idx):
         path = self.data.iloc[idx, 0]
-        image = Image.open(f"{self.folder}/{path}")
+        image = Image.open(f"{self.folder}/{path}").convert("RGB")
         label = self.data.iloc[idx, 1]
         if not self.transform:
             self.transform = transforms.ToTensor()  # minimum transformation
 
         image = self.transform(image)
+        return image, label
+
+    def get_untransformed_tuple(self, idx):
+        path = self.data.iloc[idx, 0]
+        image = Image.open(f"{self.folder}/{path}").convert("RGB")
+        label = self.data.iloc[idx, 1]
         return image, label
