@@ -6,9 +6,16 @@ import pickle
 import os
 from shutil import rmtree, copyfile
 
-_download_ = True
+_build_ = True
+_create_private_dataset_ = True
 destination_dir = os.getcwd() + "/data"
 folder = "data/sneakers_dataset/sneakers_dataset"
+
+if not os.path.exists(destination_dir):
+    raise FileNotFoundError(
+        "The data directory does not exist. Please download it first using the ",
+        "download_data.py file at the root of the directory.",
+    )
 
 
 def load_labels(path="data/cotatenis_sneakers_kaggle.csv"):
@@ -69,30 +76,45 @@ def make_dataset(folder, build, size):
     return dataset
 
 
+def split_and_save(dataset, target_dir):
+    if target_dir not in ["public", "private"]:
+        raise ValueError("target_dir must be either 'public' or 'private'")
+
+    os.makedirs(f"{destination_dir}/{target_dir}", exist_ok=True)
+    dataset_train, dataset_test = train_test_split(
+        dataset, test_size=0.3, random_state=42
+    )
+    os.makedirs(f"{destination_dir}/{target_dir}/train", exist_ok=True)
+    os.makedirs(f"{destination_dir}/{target_dir}/test", exist_ok=True)
+    for i, (path, label) in enumerate(dataset_train):
+        copyfile(
+            src=f"{destination_dir}/sneakers_dataset/sneakers_dataset/{path}",
+            dst=f"{destination_dir}/{target_dir}/train/{path}.jpg",
+        )
+    for i, (path, label) in enumerate(dataset_test):
+        copyfile(
+            src=f"{destination_dir}/sneakers_dataset/sneakers_dataset/{path}",
+            dst=f"{destination_dir}/{target_dir}/test/{path}.jpg",
+        )
+    pd.DataFrame(dataset_train).to_csv(
+        f"{destination_dir}/{target_dir}/train/train.csv", index=False
+    )
+    pd.DataFrame(dataset_test).to_csv(
+        f"{destination_dir}/{target_dir}/test/test.csv", index=False
+    )
+
+
 print("Transforming dataset...")
-cotatenis_data = make_dataset(folder, build=_download_, size=999999)
-paths = [path for path, _ in cotatenis_data]
-labels = [brand for _, brand in cotatenis_data]
-X_train, X_test, y_train, y_test = train_test_split(
-    paths, labels, test_size=0.3, random_state=42
-)
+cotatenis_data = make_dataset(folder, build=_build_, size=999999)
 
 print("Splitting dataset...")
-# save X_train, X_test as images
-os.makedirs(f"{destination_dir}/train", exist_ok=True)
-os.makedirs(f"{destination_dir}/test", exist_ok=True)
-for i, (path, label) in enumerate(zip(X_train, y_train)):
-    copyfile(
-        src=f"{destination_dir}/sneakers_dataset/sneakers_dataset/{path}",
-        dst=f"{destination_dir}/train/{i}.jpg",
-    )
-for i, (img, label) in enumerate(zip(X_test, y_test)):
-    copyfile(
-        src=f"{destination_dir}/sneakers_dataset/sneakers_dataset/{path}",
-        dst=f"{destination_dir}/test/{i}.jpg",
-    )
-pd.DataFrame(y_train).to_csv(f"{destination_dir}/train/labels.csv", index=False)
-pd.DataFrame(y_test).to_csv(f"{destination_dir}/test/labels.csv", index=False)
+if _create_private_dataset_:
+    print("Splitting between public and private datasets...")
+    public, private = train_test_split(cotatenis_data, test_size=0.5, random_state=42)
+    split_and_save(private, "private")
+    split_and_save(public, "public")
+else:
+    split_and_save(cotatenis_data, "public")
 
 print("Cleaning up...")
 try:
