@@ -82,19 +82,19 @@ def split_and_save(dataset, target_dir):
 
     os.makedirs(f"{destination_dir}/{target_dir}", exist_ok=True)
     dataset_train, dataset_test = train_test_split(
-        dataset, test_size=0.3, random_state=42
+        dataset, test_size=0.3, random_state=42, stratify=[x[1] for x in dataset]
     )
     os.makedirs(f"{destination_dir}/{target_dir}/train", exist_ok=True)
     os.makedirs(f"{destination_dir}/{target_dir}/test", exist_ok=True)
     for i, (path, label) in enumerate(dataset_train):
         copyfile(
             src=f"{destination_dir}/sneakers_dataset/sneakers_dataset/{path}",
-            dst=f"{destination_dir}/{target_dir}/train/{path}.jpg",
+            dst=f"{destination_dir}/{target_dir}/train/{path}",
         )
     for i, (path, label) in enumerate(dataset_test):
         copyfile(
             src=f"{destination_dir}/sneakers_dataset/sneakers_dataset/{path}",
-            dst=f"{destination_dir}/{target_dir}/test/{path}.jpg",
+            dst=f"{destination_dir}/{target_dir}/test/{path}",
         )
     pd.DataFrame(dataset_train).to_csv(
         f"{destination_dir}/{target_dir}/train/train.csv", index=False
@@ -110,7 +110,12 @@ cotatenis_data = make_dataset(folder, build=_build_, size=999999)
 print("Splitting dataset...")
 if _create_private_dataset_:
     print("Splitting between public and private datasets...")
-    public, private = train_test_split(cotatenis_data, test_size=0.5, random_state=42)
+    public, private = train_test_split(
+        cotatenis_data,
+        test_size=0.5,
+        random_state=42,
+        stratify=[x[1] for x in cotatenis_data],
+    )
     split_and_save(private, "private")
     split_and_save(public, "public")
 else:
