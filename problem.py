@@ -1,7 +1,10 @@
 import os
 import pandas as pd
-import numpy as np
+
+# import numpy as np
 from sklearn.model_selection import StratifiedGroupKFold
+from cotatenis_sneakers.sneaker_dataset import SneakerDataset
+from torch.utils.data import DataLoader
 
 import rampwf as rw
 
@@ -19,34 +22,44 @@ score_types = [
 ]
 
 
-def _read_data(path, split="train"):
-    """
-    Idée : avoir un dossier test et un dossier train avec dedans labels.csv qui
-    contient une colonne filename et une colonne label,
-    inspiré de https://github.com/ramp-kits/follicles_detection
-    """
-    base_data_path = os.path.abspath(os.path.join(path, "data", split))
-    labels_path = os.path.join(base_data_path, "labels.csv")
-    labels = pd.read_csv(labels_path)
-    filepaths = []
-    brands = []
-    for filename, group in labels.groupby("filename"):
-        filepath = os.path.join(base_data_path, filename)
-        filepaths.append(filepath)
-        brands.append(group)
-    X = np.array(filepaths, dtype=object)
-    y = np.array(brands, dtype=object)
-    assert len(X) == len(y)
+# def _read_data(path, split="train"):
+#     """
+#     Idée : avoir un dossier test et un dossier train avec dedans labels.csv qui
+#     contient une colonne filename et une colonne label,
+#     inspiré de https://github.com/ramp-kits/follicles_detection
+#     """
+#     base_data_path = os.path.abspath(os.path.join(path, "data", split))
+#     labels_path = os.path.join(base_data_path, "labels.csv")
+#     labels = pd.read_csv(labels_path)
+#     filepaths = []
+#     brands = []
+#     for filename, group in labels.groupby("filename"):
+#         filepath = os.path.join(base_data_path, filename)
+#         filepaths.append(filepath)
+#         brands.append(group)
+#     X = np.array(filepaths, dtype=object)
+#     y = np.array(brands, dtype=object)
+#     assert len(X) == len(y)
 
-    return X, y
-
-
-def get_train_data(path="."):
-    return _read_data(path, split="train")
+#     return X, y
 
 
-def get_test_data(path="."):
-    return _read_data(path, split="test")
+def _read_data(folder, split, batch_size, transform, shuffle):
+    if split not in ["train", "test"]:
+        raise ValueError("split must be either 'train' or 'test'")
+    path = os.path.join(folder, split)
+    data = pd.read_csv(os.path.join(path, "labels.csv"))
+    dataset = SneakerDataset(data=data, folder=path, transform=transform)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+    return dataloader
+
+
+def get_train_data(folder, batch_size, transform, shuffle):
+    return _read_data(folder, "train", batch_size, transform, shuffle)
+
+
+def get_test_data(folder, split, batch_size, transform, shuffle):
+    return _read_data(folder, "test", batch_size, transform, shuffle)
 
 
 groups = None
