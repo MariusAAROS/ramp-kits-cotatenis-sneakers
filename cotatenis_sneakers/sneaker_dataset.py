@@ -2,10 +2,11 @@ from torch.utils.data import Dataset
 from PIL import Image
 import pandas as pd
 from torchvision import transforms
+import torch
 
 
 class SneakerDataset(Dataset):
-    def __init__(self, data, folder, transform=None):
+    def __init__(self, data, folder, device, transform=None):
         """
         Args:
             data (DataFrame): Pandas DataFrame containing the path to the image
@@ -19,6 +20,7 @@ class SneakerDataset(Dataset):
 
         self.data = data
         self.folder = folder
+        self.device = device
         self.transform = transform
         self.labels = self.data.iloc[:, 1]
         self.unique_labels = self.labels.unique()
@@ -33,8 +35,11 @@ class SneakerDataset(Dataset):
         if not self.transform:
             self.transform = transforms.ToTensor()  # minimum transformation
 
-        image = self.transform(image)
-        return image, label
+        image = self.transform(image).to(self.device)
+
+        label_onehot = torch.zeros(len(self.unique_labels)).to(self.device)
+        label_onehot[self.unique_labels == label] = 1
+        return image, label_onehot
 
     def get_untransformed_tuple(self, idx):
         path = self.data.iloc[idx, 0]
