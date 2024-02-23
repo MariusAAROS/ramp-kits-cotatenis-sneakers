@@ -1,5 +1,11 @@
 import os
+import sys
+import git
 import pandas as pd
+
+root_path = git.Repo('.', search_parent_directories=True).working_tree_dir
+
+sys.path.append(root_path)
 
 # import numpy as np
 from sklearn.model_selection import StratifiedGroupKFold
