@@ -1,5 +1,5 @@
 import sys
-import os
+import git
 import pandas as pd
 from PIL import Image
 import numpy as np
@@ -9,7 +9,10 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision.transforms import functional as F
 
-sys.path.append(os.getcwd() + "/../..")
+
+root_path = git.Repo('.', search_parent_directories=True).working_tree_dir
+
+sys.path.append(root_path)
 
 from cotatenis_sneakers.sneaker_dataset import SneakerDataset
 from cotatenis_sneakers.sneaker_transforms import get_transform, UnNormalize
