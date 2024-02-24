@@ -18,7 +18,7 @@ from cotatenis_sneakers.sneaker_dataset import SneakerDataset
 from cotatenis_sneakers.sneaker_transforms import get_transform, UnNormalize
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-folder = "data/"
+folder = "data/private/"
 
 class Classifier():
     def __init__(self):
