@@ -8,8 +8,9 @@ root_path = git.Repo('.', search_parent_directories=True).working_tree_dir
 sys.path.append(root_path)
 
 # import numpy as np
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.model_selection import StratifiedShuffleSplit
 from cotatenis_sneakers.sneaker_dataset import SneakerDataset
+from cotatenis_sneakers.sneaker_transforms import get_transform
 from torch.utils.data import DataLoader
 
 import rampwf as rw
@@ -20,7 +21,14 @@ _prediction_label_names = ["adidas", "Nike", "Jordan"]
 
 Predictions = rw.prediction_types.make_multiclass(label_names=_prediction_label_names)
 
-workflow = rw.workflows.Classifier()
+workflow = rw.workflows.ImageClassifier(
+    test_batch_size=32,
+    chunk_size=256,
+    n_jobs=8,
+    n_classes=len(_prediction_label_names),
+)
+
+transform = get_transform()
 
 score_types = [
     rw.score_types.BalancedAccuracy(name="bal_acc", precision=3, adjusted=False),
@@ -50,27 +58,26 @@ score_types = [
 #     return X, y
 
 
-def _read_data(folder, split, batch_size, transform, shuffle):
+def _read_data(folder, split):
     if split not in ["train", "test"]:
         raise ValueError("split must be either 'train' or 'test'")
-    path = os.path.join(folder, split)
-    data = pd.read_csv(os.path.join(path, "labels.csv"))
-    dataset = SneakerDataset(data=data, folder=path, transform=transform)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
-    return dataloader
+    path = os.path.join(folder, split, split + ".csv")
+    path_img = os.path.join(folder, split)
+    data = pd.read_csv(path)
+    X = data.iloc[:, 0]
+    y = data.iloc[:, 1]
+    return (path_img, X), y
 
 
-def get_train_data(folder, batch_size, transform, shuffle):
-    return _read_data(folder, "train", batch_size, transform, shuffle)
+def get_train_data(path='.'):
+    return _read_data(os.path.join(path, "data", "private"), "train")
 
 
-def get_test_data(folder, split, batch_size, transform, shuffle):
-    return _read_data(folder, "test", batch_size, transform, shuffle)
+def get_test_data(path='.'):
+    return _read_data(os.path.join(path, "data", "private"), "test")
 
 
-groups = None
-
-
-def get_cv(X, y):
-    cv = StratifiedGroupKFold(n_splits=2, shuffle=True, random_state=33)
-    return cv.split(X, y, groups)
+def get_cv(folder_X, y):
+    _, X = folder_X
+    cv = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=33)
+    return cv.split(X, y)

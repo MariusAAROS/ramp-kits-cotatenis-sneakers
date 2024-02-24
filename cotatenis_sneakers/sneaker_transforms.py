@@ -64,7 +64,8 @@ class UnNormalize(object):
 
 def get_transform():
     transform = transforms.Compose(
-        [
+        [   
+            transforms.ToPILImage(),
             PadToSize((400, 400)),
             transforms.Resize((400, 400)),
             transforms.ToTensor(),
