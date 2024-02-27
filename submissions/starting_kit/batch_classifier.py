@@ -19,6 +19,9 @@ class BatchClassifier:
         self.total = 0
         self.print_every = 10
         self.model = self.build_model()
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
+        self.criterion = torch.nn.CrossEntropyLoss()
+        self.loss = None
 
     def build_model(self):
         model = torch.hub.load("pytorch/vision", "mobilenet_v2", pretrained=True)
