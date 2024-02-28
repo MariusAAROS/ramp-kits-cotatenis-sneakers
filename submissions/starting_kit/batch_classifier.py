@@ -1,11 +1,14 @@
 import sys
 import git
 import torch
+import pandas as pd
+from torch.utils.data import DataLoader
 
 
 root_path = git.Repo(".", search_parent_directories=True).working_tree_dir
-
 sys.path.append(root_path)
+from cotatenis_sneakers.sneaker_dataset import SneakerDataset
+from cotatenis_sneakers.sneaker_transforms import get_transform_notebook
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -21,6 +24,7 @@ class BatchClassifier:
         self.model = self.build_model()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
         self.criterion = torch.nn.CrossEntropyLoss()
+        self.transform = get_transform_notebook()
         self.loss = None
 
     def build_model(self):
@@ -36,23 +40,41 @@ class BatchClassifier:
         return model
 
     def fit(self, gen_builder):
-        batch_size = 32
-        gen_train, gen_valid, nb_train, nb_valid = (
-            gen_builder.get_train_valid_generators(
-                batch_size=batch_size, valid_ratio=0.1
-            )
+        data = pd.concat([gen_builder.X_array, gen_builder.y_array], axis=1)
+
+        sneaker_dataset = SneakerDataset(
+            data=data,
+            folder=gen_builder.folder,
+            device=device,
+            transform=self.transform,
         )
+        sneaker_loader = DataLoader(sneaker_dataset, batch_size=32, shuffle=True)
 
-        # for i, data in enumerate(gen_train):
-        #     inputs, labels = data
-        #     inputs, labels = inputs.to(device), labels.to(device)
+        print_every = 100
+        running_loss = 0
+        n_epochs = 2
 
-        #     self.optimizer.zero_grad()
+        self.model.train()
 
-        #     outputs = self.model(inputs)
-        #     self.loss = self.criterion(outputs, labels)
-        #     self.loss.backward()
-        #     self.optimizer.step()
+        for epoch in range(n_epochs):
+            for i, data in enumerate(sneaker_loader):
+
+                inputs, labels = data
+                inputs, labels = inputs.to(device), labels.to(device)
+
+                self.optimizer.zero_grad()
+
+                outputs = self.model(inputs)
+                self.loss = self.criterion(outputs, labels)
+                running_loss += self.loss.item()
+                self.loss.backward()
+                self.optimizer.step()
+
+                if i % print_every == 0 and i != 0:
+                    print(
+                        f"Epoch {epoch}, Iteration {i}, Loss: {running_loss/print_every}"
+                    )
+                    running_loss = 0
 
     def predict_proba(self, images):
         self.model.eval()
@@ -60,6 +82,6 @@ class BatchClassifier:
         with torch.no_grad():
             for _, img in enumerate(images):
                 img = torch.Tensor(img.reshape((-1, 3, 400, 400))).to(device)
-                outputs = self.model_(img)
+                outputs = self.model(img)
                 predictions.append(outputs.squeeze().detach().cpu().numpy())
         return predictions
