@@ -40,6 +40,10 @@ class BatchClassifier:
         return model
 
     def fit(self, gen_builder):
+        # J'ai été obligée de reconstruire data à partir des attributs de gen_builder
+        # puis de le passer à SneakerDataset car j'avais une key error en parcourant
+        # gen_builder que je n'ai pas réussi à corriger
+
         data = pd.concat([gen_builder.X_array, gen_builder.y_array], axis=1)
 
         sneaker_dataset = SneakerDataset(
@@ -50,7 +54,7 @@ class BatchClassifier:
         )
         sneaker_loader = DataLoader(sneaker_dataset, batch_size=32, shuffle=True)
 
-        print_every = 100
+        print_every = 50
         running_loss = 0
         n_epochs = 2
 
@@ -71,9 +75,8 @@ class BatchClassifier:
                 self.optimizer.step()
 
                 if i % print_every == 0 and i != 0:
-                    print(
-                        f"Epoch {epoch}, Iteration {i}, Loss: {running_loss/print_every}"
-                    )
+                    avg_loss = running_loss / print_every
+                    print(f"Epoch {epoch}, Iteration {i}, Loss: {avg_loss}")
                     running_loss = 0
 
     def predict_proba(self, images):
