@@ -6,8 +6,15 @@ First, clone the repository:
 
 ### Install
 
-To run a submission and the notebook you will need the dependencies listed
-in `requirements.txt`. You can install install the dependencies with the
+To run a submission and the notebook you will need to install `torch`, as well as the other dependencies listed in `requirements.txt`, inside a dedicated environment.
+
+Regarding the installation of `torch`, we recommand installing a version optimized for GPU. If you are using Windows, you may run the following command in your terminal :
+
+```pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118```
+
+If you are using another OS, or if you do not have a GPU, you can find other `torch` versions on the PyTorch [website](https://pytorch.org/get-started/locally/).
+
+Once you have installed `torch`, you may install the other required dependencies with the
 following command-line:
 
 ```bash
