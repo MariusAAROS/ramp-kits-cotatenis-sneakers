@@ -2,18 +2,15 @@ import os
 import sys
 import git
 import pandas as pd
-
-root_path = git.Repo('.', search_parent_directories=True).working_tree_dir
-
-sys.path.append(root_path)
-
-# import numpy as np
 from sklearn.model_selection import StratifiedShuffleSplit
-from cotatenis_sneakers.sneaker_dataset import SneakerDataset
-from cotatenis_sneakers.sneaker_transforms import get_transform
-from torch.utils.data import DataLoader
+
 
 import rampwf as rw
+
+root_path = git.Repo(".", search_parent_directories=True).working_tree_dir
+sys.path.append(root_path)
+from cotatenis_sneakers.sneaker_transforms import get_transform
+
 
 problem_title = "Sneakers brand classification"
 
@@ -69,11 +66,11 @@ def _read_data(folder, split):
     return (path_img, X), y
 
 
-def get_train_data(path='.'):
+def get_train_data(path="."):
     return _read_data(os.path.join(path, "data", "private"), "train")
 
 
-def get_test_data(path='.'):
+def get_test_data(path="."):
     return _read_data(os.path.join(path, "data", "private"), "test")
 
 
