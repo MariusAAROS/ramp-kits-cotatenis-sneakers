@@ -62,24 +62,12 @@ class UnNormalize(object):
         return tensor
 
 
-def get_transform():
-    transform = transforms.Compose(
-        [
-            transforms.ToPILImage(),
-            PadToSize((400, 400)),
-            transforms.Resize((400, 400)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]
-    )
-    return transform
-
-
-def get_transform_notebook():
+def get_transform(in_notebook=False):
     """
-    This is specific to the notebook, as the images are already in PIL format.
+    Inside the notebook, the images are already in PIL format.
     """
-    transform = transforms.Compose(
+    if in_notebook:
+        transform = transforms.Compose(
         [
             PadToSize((400, 400)),
             transforms.Resize((400, 400)),
@@ -87,4 +75,16 @@ def get_transform_notebook():
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
     )
+
+    else:
+        transform = transforms.Compose(
+            [
+                transforms.ToPILImage(),
+                PadToSize((400, 400)),
+                transforms.Resize((400, 400)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]
+        )
+
     return transform

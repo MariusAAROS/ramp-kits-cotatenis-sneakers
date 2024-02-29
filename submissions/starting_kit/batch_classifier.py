@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 root_path = git.Repo(".", search_parent_directories=True).working_tree_dir
 sys.path.append(root_path)
 from cotatenis_sneakers.sneaker_dataset import SneakerDataset
-from cotatenis_sneakers.sneaker_transforms import get_transform_notebook
+from cotatenis_sneakers.sneaker_transforms import get_transform
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -24,7 +24,7 @@ class BatchClassifier:
         self.model = self.build_model()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
         self.criterion = torch.nn.CrossEntropyLoss()
-        self.transform = get_transform_notebook()
+        self.transform = get_transform(in_notebook=True)
         self.loss = None
 
     def build_model(self):
