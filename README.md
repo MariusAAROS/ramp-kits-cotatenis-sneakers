@@ -1,6 +1,7 @@
 # COTATENIS-SNEAKERS | Multiclass classification on a sneakers dataset
 
 **WARNING** : This project has been tested on Python 3.10 and 3.11, if you encounter any error please update your Python version.
+**Data origin** : [Kaggle - Cotatenis Dataset](https://www.kaggle.com/datasets/ferraz/cotatenis-sneakers)
 
 ## Getting started
 
